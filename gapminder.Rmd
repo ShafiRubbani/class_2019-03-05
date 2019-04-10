@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 
 #Download Relevant Libraries
+
 library(dplyr)
 library(ggplot2)
 library(gganimate)
@@ -19,17 +20,36 @@ library(forcats)
 ```
 
 ```{r plot, cache=TRUE, warning = FALSE}
+# Make a plot displaying many aspects of the Gapminder dataset
+
 gapminder %>%
+  
+  # Reorder the continents alphabetically (Antartica isn't populated enough to
+  # count)
+  
   mutate(continent = fct_relevel(continent, levels = c("Americas","Africa","Asia","Europe","Oceania"))) %>%
+  
+  # Combine Asia and Oceania for the purpose of this representation
+  
   mutate(continent = fct_collapse(continent, Asia = c("Asia", "Oceania"))) %>%
   filter(continent %in% c("Americas","Africa","Asia")) %>%
+  
+  # Plot life expectancy against GDP per Capita with size representing
+  # population and color country
+  
   ggplot(aes(x = gdpPercap, y = lifeExp, size = pop, color = country)) +
   geom_point(alpha = 0.75, show.legend = FALSE) +
+  
+  # Use gapminder colors to color by continent
+  
   scale_color_manual(values = country_colors) +
   scale_x_log10(breaks = c(1000, 10000), labels = c("$1000","$10000")) +
   facet_grid(~continent) +
   ggtitle("The World Gets Better Every Year: {round(frame_time,0)}") +
   labs(caption = "Source: gapminder package", x = "GDP Per Capita", y = "Life Expectancy") +
+  
+  # Continuously animate, transitioning by year
+  
   transition_time(year) +
   ease_aes()
 ```
